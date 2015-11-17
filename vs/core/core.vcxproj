@@ -879,12 +879,12 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;COMPILER_MSVC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>H:\tensorflow;H:\tensorflow\google\protobuf\src;H:\googletest\googletest\include;H:\tensorflow\third_party\eigen3</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>H:\tensorflow;H:\tensorflow\google\protobuf\src;H:\googletest\googletest\include;H:\tensorflow\third_party\eigen3;H:\tensorflow\vs\core</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>H:\tensorflow\vs\core\win.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
