@@ -2,6 +2,7 @@
 #define TENSORFLOW_UTIL_SPARSE_SPARSE_TENSOR_H_
 
 #include <limits>
+#include <numeric>
 
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/framework/types.pb.h"

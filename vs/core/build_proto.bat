@@ -1,5 +1,8 @@
+rem set protoc=C:\src\packages\protoc-3.0.0-alpha-2\protoc.exe
+set protoc=H:\tensorflow\google\protobuf\build\Debug\protoc.exe
+
 cd H:\tensorflow\tensorflow\core\framework\
-set command=C:\src\packages\protoc-3.0.0-alpha-2\protoc.exe --proto_path=H:\tensorflow;.\ --cpp_out=.\
+set command=%protoc% --proto_path=H:\tensorflow;.\ --cpp_out=.\
 %command% allocation_description.proto
 %command% attr_value.proto
 %command% config.proto
@@ -17,10 +20,10 @@ set command=C:\src\packages\protoc-3.0.0-alpha-2\protoc.exe --proto_path=H:\tens
 %command% types.proto
 
 cd H:\tensorflow\tensorflow\core\lib\core
-set command=C:\src\packages\protoc-3.0.0-alpha-2\protoc.exe --proto_path=H:\tensorflow;.\ --cpp_out=.\
+set command=%protoc% --proto_path=H:\tensorflow;.\ --cpp_out=.\
 %command% error_codes.proto
 
 cd H:\tensorflow\tensorflow\core\util
-set command=C:\src\packages\protoc-3.0.0-alpha-2\protoc.exe --proto_path=H:\tensorflow;.\ --cpp_out=.\
+set command=%protoc% --proto_path=H:\tensorflow;.\ --cpp_out=.\
 %command% event.proto
 %command% saved_tensor_slice.proto

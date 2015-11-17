@@ -43,11 +43,12 @@ namespace {
 #elif EIGEN_COMP_MSVC
     DWORD leading_zeros = 0;
     if (sizeof(T) == 8) {
-      _BitScanReverse64(&leading_zero, val);
+      _BitScanReverse64(&leading_zeros, val);
     }
     else {
-      _BitScanReverse(&leading_zero, val);
+      _BitScanReverse(&leading_zeros, val);
     }
+    return leading_zeros;
 #else
     if (sizeof(T) == 8) {
       return __builtin_clzl(static_cast<uint64_t>(val));

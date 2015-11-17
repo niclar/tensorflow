@@ -884,7 +884,9 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>H:\tensorflow;H:\tensorflow\google\protobuf\src;H:\googletest\googletest\include;H:\tensorflow\third_party\eigen3;H:\tensorflow\vs\core</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>H:\tensorflow\vs\core\win.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>H:\tensorflow\vs\core\windows_defines.h</ForcedIncludeFiles>
+      <AdditionalUsingDirectories>
+      </AdditionalUsingDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -900,10 +902,17 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalUsingDirectories>
+      </AdditionalUsingDirectories>
+      <AdditionalIncludeDirectories>H:\tensorflow;H:\tensorflow\google\protobuf\src;H:\googletest\googletest\include;H:\tensorflow\third_party\eigen3;H:\tensorflow\vs\core</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>H:\tensorflow\vs\core\windows_defines.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Command>call H:\tensorflow\vs\core\build_proto.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

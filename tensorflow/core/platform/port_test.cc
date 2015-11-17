@@ -35,7 +35,7 @@ TEST(ConditionVariable, WaitForMilliseconds_Signalled) {
   // Sleep for just 1 second then notify.  We have a timeout of 3 secs,
   // so the condition variable will notice the cv signal before the timeout.
   pool.Schedule([&m, &cv]() {
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     mutex_lock l(m);
     cv.notify_all();
   });
