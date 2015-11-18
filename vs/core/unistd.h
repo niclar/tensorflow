@@ -12,8 +12,10 @@
 #include <process.h> /* for getpid() and the exec..() family */
 #include <direct.h> /* for _getcwd() and _chdir() */
 
+/*
 #define srandom srand
 #define random rand
+*/
 
 /* Values for the second argument to access.
    These may be OR'd together.  */
