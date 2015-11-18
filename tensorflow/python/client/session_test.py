@@ -445,6 +445,12 @@ class SessionTest(test_util.TensorFlowTestCase):
       sess.close()
       t.join()
 
+  def testUseEmptyGraph(self):
+    with session.Session() as sess:
+      with self.assertRaisesWithPredicateMatch(
+          RuntimeError, lambda e: 'The Session graph is empty.' in str(e)):
+        sess.run([])
+
   def testNotEntered(self):
     # pylint: disable=protected-access
     self.assertEqual(ops._default_session_stack.get_default(), None)
@@ -602,6 +608,29 @@ class SessionTest(test_util.TensorFlowTestCase):
       self.assertEqual(45.0, sess.run(b'f:0'))
       self.assertEqual(45.0, sess.run(r'f:0'))
 
+  def testIncorrectGraph(self):
+    with ops.Graph().as_default() as g_1:
+      c_1 = constant_op.constant(1.0, name='c')
+
+    with ops.Graph().as_default() as g_2:
+      c_2 = constant_op.constant(2.0, name='c')
+
+    self.assertEqual('c', c_1.op.name)
+    self.assertEqual('c', c_2.op.name)
+
+    with session.Session(graph=g_1) as sess_1:
+      self.assertEqual(1.0, sess_1.run(c_1))
+      with self.assertRaises(ValueError):
+        sess_1.run(c_2)
+      with self.assertRaises(ValueError):
+        sess_1.run(c_2.op)
+
+    with session.Session(graph=g_2) as sess_2:
+      with self.assertRaises(ValueError):
+        sess_2.run(c_1)
+      with self.assertRaises(ValueError):
+        sess_2.run(c_1.op)
+      self.assertEqual(2.0, sess_2.run(c_2))
 
 if __name__ == '__main__':
   googletest.main()

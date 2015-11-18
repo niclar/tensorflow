@@ -1,11 +1,12 @@
+#include <string>
 #include <unordered_set>
 #include <utility>
 
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
-#include "tensorflow/core/public/tensor_shape.h"
-#include "tensorflow/core/public/tensor.h"
 #include "tensorflow/core/public/status.h"
+#include "tensorflow/core/public/tensor.h"
+#include "tensorflow/core/public/tensor_shape.h"
 
 namespace tensorflow {
 template <typename T>
@@ -70,6 +71,7 @@ class ListDiffOp : public OpKernel {
       ListDiffOp<type>)
 
 TF_CALL_REAL_NUMBER_TYPES(REGISTER_LISTDIFF);
+REGISTER_LISTDIFF(string);
 #undef REGISTER_LISTDIFF
 
 }  // namespace tensorflow

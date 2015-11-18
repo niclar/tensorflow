@@ -16,7 +16,7 @@ Status ValidateOpDef(const OpDef& op_def);
 // Validates that attr_value satisfies the type and constraints from attr.
 // REQUIRES: attr has already been validated.
 Status ValidateAttrValue(const AttrValue& attr_value,
-                              const OpDef::AttrDef& attr);
+                         const OpDef::AttrDef& attr);
 
 // The following search through op_def for an attr with the indicated name.
 // Returns nullptr if no such attr is found.
@@ -26,6 +26,11 @@ OpDef::AttrDef* FindAttrMutable(StringPiece name, OpDef* op_def);
 // Produce a human-readable version of an op_def that is more concise
 // than a text-format proto.  Excludes descriptions.
 string SummarizeOpDef(const OpDef& op_def);
+
+// Returns an error if new_op is not backwards-compatible with (more
+// accepting than) old_op.
+// REQUIRES: old_op and new_op must pass validation.
+Status OpDefCompatible(const OpDef& old_op, const OpDef& new_op);
 
 }  // namespace tensorflow
 

@@ -11,7 +11,7 @@ const LOG_PREFIX_MSG = "Graph hierarchy: ";
 /**
  * Class used as output for getPredecessors and getSuccessors methods
  */
-interface Edges {
+export interface Edges {
   control: string[];
   regular: string[];
 }
@@ -370,9 +370,9 @@ function findEdgeTargetsInGraph(
   });
 }
 
-interface HierarchyParams {
+export interface HierarchyParams {
   verifyTemplate: boolean;
-  groupSeries: boolean;
+  seriesNodeMinSize: number;
 }
 
 /**
@@ -396,8 +396,8 @@ export function build(graph: tf.graph.SlimGraph, params: HierarchyParams,
   }, tracker)
   .then(() => {
     return runAsyncTask("Detect series", 20, () => {
-      if (params.groupSeries) {
-        groupSeries(h.root, h, seriesNames);
+      if (params.seriesNodeMinSize > 0) {
+        groupSeries(h.root, h, seriesNames, params.seriesNodeMinSize);
       }
     }, tracker);
   })
@@ -550,15 +550,17 @@ function addEdges(h: Hierarchy, graph: SlimGraph,
  *
  * @param metanode
  * @param hierarchy
+ * @param threshold If the series has this many nodes or more, then group them
+ *     into a series.
  * @return A dictionary from node name to series node name that contains the node
  */
 function groupSeries(metanode: Metanode, hierarchy: Hierarchy,
-    seriesNames: { [name: string]: string }) {
+    seriesNames: { [name: string]: string }, threshold: number) {
   let metagraph = metanode.metagraph;
   _.each(metagraph.nodes(), n => {
     let child = metagraph.node(n);
     if (child.type === tf.graph.NodeType.META) {
-      groupSeries(<Metanode>child, hierarchy, seriesNames);
+      groupSeries(<Metanode>child, hierarchy, seriesNames, threshold);
     }
   });
 
@@ -569,6 +571,9 @@ function groupSeries(metanode: Metanode, hierarchy: Hierarchy,
   // metagraph.
   _.each(seriesDict, function(seriesNode: SeriesNode, seriesName: string) {
     let nodeMemberNames = seriesNode.metagraph.nodes();
+    if (nodeMemberNames.length < threshold) {
+      return;
+    }
     let firstMember = seriesNode.metagraph.node(nodeMemberNames[0]);
     let seriesType = firstMember.type;
 
@@ -635,7 +640,7 @@ function detectSeries(clusters: {[clusterId: string]: string[]},
      * which is an array that contains objects with name, id, prefix, suffix,
      * and parent properties.
      */
-    let candidatesDict = {};
+    let candidatesDict: {[seriesName: string]: SeriesNode[]} = {};
 
     // Group all nodes that have the same name, with the exception of a
     // number at the end of the name after an underscore, which is allowed to

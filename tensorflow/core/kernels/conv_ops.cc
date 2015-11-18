@@ -5,20 +5,20 @@
 
 #include "tensorflow/core/framework/numeric_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
-#include "tensorflow/core/platform/logging.h"
-#include "tensorflow/core/public/tensor_shape.h"
 #include "tensorflow/core/framework/tensor_slice.h"
 #include "tensorflow/core/kernels/conv_2d.h"
 #include "tensorflow/core/kernels/ops_util.h"
 #include "tensorflow/core/lib/core/errors.h"
 #include "tensorflow/core/lib/gtl/array_slice.h"
-#include "tensorflow/core/util/use_cudnn.h"
-#include "tensorflow/core/util/padding.h"
+#include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/public/tensor.h"
+#include "tensorflow/core/public/tensor_shape.h"
+#include "tensorflow/core/util/padding.h"
+#include "tensorflow/core/util/use_cudnn.h"
 
 #if GOOGLE_CUDA
-#include "tensorflow/core/common_runtime/gpu_device_context.h"
 #include "tensorflow/stream_executor/stream.h"
+#include "tensorflow/core/common_runtime/gpu_device_context.h"
 #endif  // GOOGLE_CUDA
 
 namespace tensorflow {
@@ -81,17 +81,16 @@ class Conv2DOp : public BinaryOp<T> {
     OP_REQUIRES_OK(context, context->GetAttr("use_cudnn_on_gpu", &use_cudnn_));
     use_cudnn_ &= CanUseCudnn();
     OP_REQUIRES(context, strides_.size() == 4,
-                errors::InvalidArgument(
-                    "Sliding window strides field must "
-                    "specify 4 dimensions"));
+                errors::InvalidArgument("Sliding window strides field must "
+                                        "specify 4 dimensions"));
     OP_REQUIRES(context, strides_[1] == strides_[2],
                 errors::InvalidArgument(
                     "Current implementation only supports equal length "
                     "strides in the row and column dimensions."));
-    OP_REQUIRES(context, (strides_[0] == 1 && strides_[3] == 1),
-                errors::InvalidArgument(
-                    "Current implementation does not yet support "
-                    "strides in the batch and depth dimensions."));
+    OP_REQUIRES(
+        context, (strides_[0] == 1 && strides_[3] == 1),
+        errors::InvalidArgument("Current implementation does not yet support "
+                                "strides in the batch and depth dimensions."));
     OP_REQUIRES_OK(context, context->GetAttr("padding", &padding_));
   }
 
@@ -168,6 +167,10 @@ class Conv2DOp : public BinaryOp<T> {
             << ", filter_rows = " << filter_rows << ", stride = " << stride
             << ", out_depth = " << out_depth;
 
+    // If there is nothing to compute, return.
+    if (out_shape.num_elements() == 0) {
+      return;
+    }
     LaunchConvOp<Device, T>::launch(context, use_cudnn_, input, filter, stride,
                                     BrainPadding2EigenPadding(padding_),
                                     output);
@@ -261,10 +264,11 @@ struct LaunchConvOp<GPUDevice, T> {
                           input.dim_size(2) + padding_cols, input.dim_size(3)}),
                      &transformed_input));
 
-        functor::PadInput<GPUDevice, T>()(
-            ctx->eigen_device<GPUDevice>(), input_param.tensor<T, 4>(),
+        functor::PadInput<GPUDevice, T, int>()(
+            ctx->eigen_device<GPUDevice>(), To32Bit(input_param.tensor<T, 4>()),
             padding_rows / 2, padding_rows - padding_rows / 2, padding_cols / 2,
-            padding_cols - padding_cols / 2, transformed_input.tensor<T, 4>());
+            padding_cols - padding_cols / 2,
+            To32Bit(transformed_input.tensor<T, 4>()));
         input = transformed_input;
       }
 
@@ -297,9 +301,9 @@ struct LaunchConvOp<GPUDevice, T> {
                                       filter.dim_size(0), filter.dim_size(1)}),
                          &transformed_filter));
 
-      functor::TransformFilter<GPUDevice, T>()(
-          ctx->eigen_device<GPUDevice>(), filter.tensor<T, 4>(),
-          transformed_filter.tensor<T, 4>());
+      functor::TransformFilter<GPUDevice, T, int>()(
+          ctx->eigen_device<GPUDevice>(), To32Bit(filter.tensor<T, 4>()),
+          To32Bit(transformed_filter.tensor<T, 4>()));
 
       auto input_ptr = AsDeviceMemory(input.template flat<T>().data(),
                                       input.template flat<T>().size());
@@ -347,16 +351,16 @@ namespace functor {
       const Eigen::array<Eigen::IndexPair<Eigen::DenseIndex>, 1>& dim_pair); \
   extern template struct MatMulConvFunctor<GPUDevice, T>;                    \
   template <>                                                                \
-  void TransformFilter<GPUDevice, T>::operator()(                            \
-      const GPUDevice& d, typename TTypes<T, 4>::ConstTensor in,             \
-      typename TTypes<T, 4>::Tensor out);                                    \
-  extern template struct TransformFilter<GPUDevice, T>;                      \
+  void TransformFilter<GPUDevice, T, int>::operator()(                       \
+      const GPUDevice& d, typename TTypes<T, 4, int>::ConstTensor in,        \
+      typename TTypes<T, 4, int>::Tensor out);                               \
+  extern template struct TransformFilter<GPUDevice, T, int>;                 \
   template <>                                                                \
-  void PadInput<GPUDevice, T>::operator()(                                   \
-      const GPUDevice& d, typename TTypes<T, 4>::ConstTensor in,             \
+  void PadInput<GPUDevice, T, int>::operator()(                              \
+      const GPUDevice& d, typename TTypes<T, 4, int>::ConstTensor in,        \
       int padding_rows_left, int padding_rows_right, int padding_cols_left,  \
-      int padding_cols_right, typename TTypes<T, 4>::Tensor out);            \
-  extern template struct PadInput<GPUDevice, T>
+      int padding_cols_right, typename TTypes<T, 4, int>::Tensor out);       \
+  extern template struct PadInput<GPUDevice, T, int>
 
 DECLARE_GPU_SPEC(float);
 #undef DECLARE_GPU_SPEC

@@ -3,6 +3,7 @@
 
 #define EIGEN_USE_THREADS
 
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/framework/kernel_def_builder.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor_types.h"
@@ -12,7 +13,6 @@
 #include "tensorflow/core/public/tensor.h"
 #include "tensorflow/core/public/tensor_shape.h"
 #include "tensorflow/core/util/work_sharder.h"
-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
 
@@ -86,11 +86,10 @@ class LinearAlgebraOp : public LinearAlgebraOpBase {
   explicit LinearAlgebraOp(OpKernelConstruction* context)
       : LinearAlgebraOpBase(context) {}
 
-  using ConstMatrixMap =
-      Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic,
-                                     Eigen::RowMajor>>;
-  using MatrixMap = Eigen::Map<
-      Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>;
+  using Matrix =
+      Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+  using ConstMatrixMap = Eigen::Map<const Matrix>;
+  using MatrixMap = Eigen::Map<Matrix>;
 
   // Perform the actual computation on the input matrix, and store the results
   // in the output. This will be called repeatedly for a single call to
