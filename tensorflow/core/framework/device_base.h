@@ -127,6 +127,7 @@ class DeviceBase {
   // attributes requested.  See allocator.h for more details.
   virtual Allocator* GetAllocator(AllocatorAttributes /*attr*/) {
     LOG(FATAL) << "GetAllocator() is not implemented.";
+    return nullptr;
   }
 
   const Eigen::ThreadPoolDevice* eigen_cpu_device() {
@@ -145,6 +146,8 @@ class DeviceBase {
 
   virtual const DeviceAttributes& attributes() const {
     LOG(FATAL) << "Device does not implement attributes()";
+    static DeviceAttributes da;
+    return da;
   }
 
   // Materializes the given TensorProto into 'tensor' stored in Device
